@@ -1,0 +1,1 @@
+- Initial run: was able to run it locally, and tested the connection using concurrently (to run )

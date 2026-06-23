@@ -3,9 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 4000",
+    "start": "next start -p 3000",
     "build": "npx prisma generate && next build",
-    "start": "next start",
+    "dev:both": "concurrently -n dev,prod -c blue,green \"next dev -p 4000\" \"next start -p 3000\"",
+    "setup:both": "npm run build && concurrently -n dev,prod -c blue,green \"next dev -p 4000\" \"next start -p 3000\"",
     "lint": "eslint"
   },
   "dependencies": {
@@ -24,6 +26,7 @@
     "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^10.0.3",
     "eslint": "^9",
     "eslint-config-next": "16.2.7",
     "prisma": "^7.8.0",
