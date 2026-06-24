@@ -21,3 +21,10 @@
 - **Cause:** `sendChat` sent `{ t: "msg" }` but `wireDataChannel` only handled `{ t: "chat" }`.
 - **Fix:** Changed sender to use `"chat"`.
 - **Verified:** Messages work both directions over P2P data channel.
+
+### Fix 3 — Peers stuck busy after disconnect
+- **Symptom:** After ending a connection, could not reconnect — dot stayed busy / requests auto-declined.
+- **How I found it:** Connected, ended call, tried connecting again — failed. Checked `busy` handling in `/api/signal`.
+- **Cause:** `busy` cleared on `decline` but not on `end`.
+- **Fix:** Clear `busy` for both peers on `end` as well as `decline`.
+- **Verified:** Can connect, disconnect, and reconnect successfully.
