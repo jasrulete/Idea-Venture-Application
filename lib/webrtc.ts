@@ -107,7 +107,6 @@ export class PeerSession {
     this.ignoreOffer = !this.polite && offerCollision;
     if (this.ignoreOffer) return;
 
-    await this.flushPendingCandidates();
     await this.pc.setRemoteDescription(desc);
     if (desc.type === "offer") {
       await this.pc.setLocalDescription();
@@ -115,6 +114,7 @@ export class PeerSession {
         this.cb.onSignal("answer", JSON.stringify(this.pc.localDescription));
       }
     }
+    await this.flushPendingCandidates();
   }
 
   private async flushPendingCandidates() {
