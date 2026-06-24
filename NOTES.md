@@ -104,13 +104,6 @@ Reviewed `/api/join`, `/api/poll`, `/api/signal`, `/api/leave`. Main risk: all e
 - **Security headers:** `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` in `next.config.ts`.
 - **Client wiring:** `page.tsx` passes `secret` on poll, leave, and every signal call (via a `signal()` helper + ref for unload handlers).
 
-### Phase 3 review fixes (incomplete work caught on audit)
-
-- Rate-limit checks were at **module scope** (referenced `request` outside handlers) — **build failed**.
-- `signal/route.ts` referenced undefined `sender`, had duplicate/dead busy logic, and dropped `VALID_TYPES` validation.
-- `leave/route.ts` referenced undefined `parsed` and had DB cleanup commented out.
-- Client still called `poll(sessionId)` / `leave(sessionId)` / old `sendSignal` arity without the secret.
-
 ### Trade-offs / not fixed
 
 - Peer IDs remain visible on the map (required for tap-to-connect).
