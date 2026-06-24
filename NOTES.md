@@ -35,3 +35,10 @@
 - **Cause:** `flushPendingCandidates()` ran before `setRemoteDescription`, so ICE candidates were added too early and silently failed.
 - **Fix:** Set remote description first, then flush pending ICE candidates.
 - **Verified:** Video call establishes with remote stream on desktop.
+
+## Phase 2 — Making it good
+
+### Step 1: Design foundation
+- **What changed:** CSS custom properties for colors/surfaces, `.glass-panel` utility, fade/scale animations, Geist applied to body.
+- **Why:** Single source of truth so every screen feels cohesive instead of one-off Tailwind classes.
+- **Verified:** Fonts and base colors consistent across entry gate and map.

@@ -5,7 +5,9 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import type { Map as MapboxMap, Marker } from "mapbox-gl";
 import type { PeerDot } from "@/lib/types";
 
-const TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "pk.eyJ1IjoicHVsc2UtbWFwIiwiYSI6ImNrMDBkZW1vMDAwMDAwMDAifQ.AAAAAAAAAAAAAAAAAAAAAA";
+const TOKEN =
+  process.env.NEXT_PUBLIC_MAPBOX_TOKEN ??
+  "pk.eyJ1IjoicHVsc2UtbWFwIiwiYSI6ImNrMDBkZW1vMDAwMDAwMDAifQ.AAAAAAAAAAAAAAAAAAAAAA";
 
 function dotColor(id: string): string {
   let hash = 0;
@@ -92,9 +94,14 @@ export default function WorldMap({
         const el = document.createElement("div");
         el.className = "pulse-me";
         el.title = "You are here";
-        el.innerHTML = `<span class="pulse-me-label">Me</span>📍`;
+        el.innerHTML = `<span class="pulse-me-label">You</span>`;
+        el.className = peer.busy ? "pulse-dot pulse-dot--busy" : "pulse-dot";
+        // remove the separate opacity style line (marker.getElement().style.opacity = ...)
         // anchor "bottom" → the pin's tip sits on the exact coordinate.
-        meMarkerRef.current = new mapboxgl.Marker({ element: el, anchor: "bottom" })
+        meMarkerRef.current = new mapboxgl.Marker({
+          element: el,
+          anchor: "bottom",
+        })
           .setLngLat([me.lng, me.lat])
           .addTo(map);
       } else {
@@ -136,7 +143,7 @@ export default function WorldMap({
             .addTo(map);
           markers.set(peer.id, marker);
         }
-        marker.getElement().style.opacity = peer.busy ? "0.35" : "1";
+        // marker.getElement().style.opacity = peer.busy ? "0.35" : "1";
       }
 
       // Drop markers for peers that went offline / got filtered out.
@@ -161,15 +168,25 @@ export default function WorldMap({
         <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
           <p className="max-w-md rounded-lg bg-zinc-800 p-4 text-sm text-zinc-200">
             Set{" "}
-            <code className="text-emerald-400">NEXT_PUBLIC_MAPBOX_TOKEN</code> in{" "}
-            <code>.env</code> to load the map.
+            <code className="text-emerald-400">NEXT_PUBLIC_MAPBOX_TOKEN</code>{" "}
+            in <code>.env</code> to load the map.
           </p>
         </div>
       )}
 
       {/* Online count */}
-      <div className="absolute bottom-4 left-4 rounded-full bg-zinc-900/80 px-3 py-1.5 text-xs text-zinc-300 backdrop-blur">
-        {peers.length} online
+      <div className="glass-panel animate-fade-up absolute left-4 top-4 flex items-center gap-3 rounded-2xl px-4 py-2.5">
+        <span className="relative flex h-2.5 w-2.5">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400" />
+        </span>
+        <div>
+          <p className="text-xs font-medium text-zinc-300">
+            {peers.length} {peers.length === 1 ? "stranger" : "strangers"}{" "}
+            nearby
+          </p>
+          <p className="text-[10px] text-zinc-500">Tap a dot to connect</p>
+        </div>
       </div>
     </div>
   );
