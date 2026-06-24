@@ -34,7 +34,7 @@ export default function EntryGate({
   }
 
   return (
-    <div className="relative flex min-h-full flex-1 flex-col items-center justify-center overflow-hidden bg-[var(--background)] p-6 text-zinc-100">
+    <div className="relative flex min-h-full flex-1 flex-col items-center justify-center overflow-hidden bg-[var(--background)] p-6 text-zinc-100 grain-overlay">
       {/* Ambient background glow */}
       <div className="pointer-events-none absolute inset-0" aria-hidden>
         <div className="absolute left-1/2 top-1/3 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-500/10 blur-3xl" />

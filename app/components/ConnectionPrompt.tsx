@@ -25,7 +25,10 @@ export default function ConnectionPrompt({
         aria-modal="true"
       >
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-400/15 ring-1 ring-emerald-400/30">
-          <span className="text-2xl">◎</span>
+          <span className="relative flex h-4 w-4">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-40" />
+            <span className="relative h-4 w-4 rounded-full bg-emerald-400" />
+          </span>
         </div>
         <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
         {subtitle && (

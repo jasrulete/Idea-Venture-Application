@@ -63,7 +63,7 @@ export default function ChatPanel({
           <button
             onClick={onStartVideo}
             disabled={!connected || videoBusy}
-            className="rounded-full border border-zinc-700 px-3 py-1.5 text-sm hover:border-zinc-500 disabled:opacity-40"
+            className="rounded-full border border-zinc-700/80 px-3 py-1.5 text-sm transition hover:border-emerald-400/40 hover:bg-emerald-400/5 disabled:opacity-40"
           >
             Video
           </button>
@@ -76,7 +76,7 @@ export default function ChatPanel({
         </div>
       </header>
 
-      <div className="flex-1 space-y-2 overflow-y-auto p-4">
+      <div className="flex-1 space-y-2 overflow-y-auto p-4 chat-scroll">
         {messages.length === 0 && (
           <div className="mt-12 flex flex-col items-center gap-2 text-center">
             <span className="text-2xl opacity-40">💬</span>
@@ -109,7 +109,13 @@ export default function ChatPanel({
         onSubmit={submit}
         className="flex gap-2 border-t border-zinc-800 p-3"
       >
-        <input className="flex-1 rounded-full border border-white/5 bg-zinc-900/80 px-4 py-2.5 text-sm outline-none placeholder:text-zinc-600 focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30 disabled:opacity-50" />
+        <input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          placeholder={connected ? "Type a message…" : "Connecting…"}
+          disabled={!connected}
+          className="flex-1 rounded-full border border-white/5 bg-zinc-900/80 px-4 py-2.5 text-sm outline-none placeholder:text-zinc-600 focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30 disabled:opacity-50"
+        />
         <button
           type="submit"
           disabled={!connected || !draft.trim()}

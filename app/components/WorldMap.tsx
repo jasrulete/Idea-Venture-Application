@@ -95,15 +95,13 @@ export default function WorldMap({
         el.className = "pulse-me";
         el.title = "You are here";
         el.innerHTML = `<span class="pulse-me-label">You</span>`;
-        el.className = peer.busy ? "pulse-dot pulse-dot--busy" : "pulse-dot";
-        // remove the separate opacity style line (marker.getElement().style.opacity = ...)
-        // anchor "bottom" → the pin's tip sits on the exact coordinate.
         meMarkerRef.current = new mapboxgl.Marker({
           element: el,
-          anchor: "bottom",
+          anchor: "center",
         })
           .setLngLat([me.lng, me.lat])
           .addTo(map);
+        map.flyTo({ center: [me.lng, me.lat], zoom: 4.2, duration: 1800 });
       } else {
         meMarkerRef.current.setLngLat([me.lng, me.lat]);
       }
@@ -142,8 +140,12 @@ export default function WorldMap({
             .setLngLat([peer.lng, peer.lat])
             .addTo(map);
           markers.set(peer.id, marker);
+        } else {
+          marker.setLngLat([peer.lng, peer.lat]);
         }
-        // marker.getElement().style.opacity = peer.busy ? "0.35" : "1";
+        const el = marker.getElement() as HTMLElement;
+        el.className = peer.busy ? "pulse-dot pulse-dot--busy" : "pulse-dot";
+        if (!peer.busy) el.style.background = dotColor(peer.id);
       }
 
       // Drop markers for peers that went offline / got filtered out.
@@ -163,6 +165,7 @@ export default function WorldMap({
   return (
     <div className="absolute inset-0">
       <div ref={containerRef} className="h-full w-full bg-zinc-900" />
+      <div className="map-vignette" aria-hidden />
 
       {!TOKEN && (
         <div className="absolute inset-0 flex items-center justify-center p-6 text-center">

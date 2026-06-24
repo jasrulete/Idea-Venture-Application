@@ -36,9 +36,38 @@
 - **Fix:** Set remote description first, then flush pending ICE candidates.
 - **Verified:** Video call establishes with remote stream on desktop.
 
-## Phase 2 — Making it good
+## Phase 2 — Make it good
 
 ### Step 1: Design foundation
 - **What changed:** CSS custom properties for colors/surfaces, `.glass-panel` utility, fade/scale animations, Geist applied to body.
 - **Why:** Single source of truth so every screen feels cohesive instead of one-off Tailwind classes.
 - **Verified:** Fonts and base colors consistent across entry gate and map.
+
+### Step 2: Entry gate & first impression
+- **What changed:** Ambient emerald/teal glow, gradient “Pulse” title, animated fade-up on load, film-grain overlay, clearer privacy copy.
+- **Why:** The gate is the only branded moment before the map — it should feel intentional and trustworthy.
+- **Verified:** Entry screen reads as a polished product landing, not a dev placeholder.
+
+### Step 3: Map & presence HUD
+- **What changed:** Glass HUD for online count, radial vignette over the map, fly-to animation when you land, restored busy-state styling on peer dots, fixed “You” pin (was accidentally overwritten with peer-dot classes).
+- **Why:** Map is the hero surface; vignette + motion draw focus without hiding Mapbox detail.
+- **Verified:** Dots pulse, busy peers dim, map centers on the user after join.
+
+### Step 4: Connection flow & toasts
+- **What changed:** Reusable `ConnectionPrompt` with glass card + pulsing icon, `Toast` component for status (requesting, notices), spinner on pending states.
+- **Why:** Connection/video prompts are high-anxiety moments — centered modals with clear actions reduce confusion.
+- **Verified:** Request / accept / decline / timeout states all have visible feedback.
+
+### Step 5: Chat panel
+- **What changed:** Glass sidebar, live connection indicator (ping dot), message bubbles with asymmetric corners, empty state, custom scrollbar, fixed missing `value`/`onChange` on the input (typing was broken).
+- **Why:** Chat is the core loop after connecting; broken input was a regression from the restyle.
+- **Verified:** Messages send, scroll follows, panel works on mobile full-width.
+
+### Step 6: Video panel
+- **What changed:** Full-screen remote feed with gradient overlay, PiP self-view inside the relative container (fixed broken JSX that hid PiP), “You” label on PiP, glass end button.
+- **Why:** Original Phase 2 edit had mismatched closing tags — PiP rendered outside the positioned parent and could be invisible on desktop.
+- **Verified:** Build passes; PiP sits bottom-right with border/shadow.
+
+### Local dev note
+- **`npm run dev` failed** in `Idea-Venture-Application` because `node_modules` was missing — run `npm install` after clone/branch switch.
+- **`dev:both`** now runs two dev servers (`:4000` + `:3000`) so two-browser WebRTC testing works without a production build first.
