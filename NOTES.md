@@ -35,3 +35,10 @@
 - **Cause:** `flushPendingCandidates()` ran before `setRemoteDescription`, so ICE candidates were added too early and silently failed.
 - **Fix:** Set remote description first, then flush pending ICE candidates.
 - **Verified:** Video call establishes with remote stream on desktop.
+
+### Fix 5: Remote video blank on desktop
+- **Symptom:** Local camera preview worked but remote video sometimes stayed black on laptop.
+- **How I found it:** After ICE fix, still saw occasional blank remote feed on Chrome desktop.
+- **Cause:** Stream attached to `<video>` but browser did not autoplay without explicit `play()`.
+- **Fix:** Call `video.play()` after setting `srcObject` (with `playsInline` already on elements).
+- **Verified:** Both cameras visible on desktop after accepting video.

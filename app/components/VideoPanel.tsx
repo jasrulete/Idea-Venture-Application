@@ -15,15 +15,17 @@ export default function VideoPanel({
   const remoteRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (localRef.current && localRef.current.srcObject !== localStream) {
-      localRef.current.srcObject = localStream;
-    }
+    const el = localRef.current;
+    if (!el || !localStream) return;
+    el.srcObject = localStream;
+    void el.play().catch(() => {});
   }, [localStream]);
 
   useEffect(() => {
-    if (remoteRef.current && remoteRef.current.srcObject !== remoteStream) {
-      remoteRef.current.srcObject = remoteStream;
-    }
+    const el = remoteRef.current;
+    if (!el || !remoteStream) return;
+    el.srcObject = remoteStream;
+    void el.play().catch(() => {});
   }, [remoteStream]);
 
   return (
