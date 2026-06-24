@@ -10,6 +10,7 @@ import { join, leave, poll, sendSignal } from "@/lib/api";
 import { PeerSession, type DescType, type PeerControl } from "@/lib/webrtc";
 import { POLL_INTERVAL_MS } from "@/lib/presence";
 import { type PeerDot, type SignalMsg } from "@/lib/types";
+import Toast from "./components/Toast";
 
 type Conn =
   | { kind: "idle" }
@@ -30,9 +31,10 @@ export default function Home() {
   const [notice, setNotice] = useState<string | null>(null);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
-  const [myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(
-    null,
-  );
+  const [myLocation, setMyLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
 
   const [conn, _setConn] = useState<Conn>({ kind: "idle" });
   const connRef = useRef<Conn>(conn);
@@ -324,22 +326,24 @@ export default function Home() {
         canConnect={conn.kind === "idle"}
       />
 
-      {notice && (
-        <div className="absolute left-1/2 top-20 z-30 -translate-x-1/2 rounded-full bg-zinc-800/90 px-4 py-2 text-sm text-zinc-100 shadow-lg backdrop-blur">
-          {notice}
-        </div>
-      )}
+      {notice && <Toast>{notice}</Toast>}
 
       {conn.kind === "requesting" && (
-        <div className="absolute left-1/2 top-20 z-30 flex -translate-x-1/2 items-center gap-3 rounded-full bg-zinc-800/90 px-4 py-2 text-sm text-zinc-100 shadow-lg backdrop-blur">
-          <span>Requesting connection…</span>
-          <button
-            onClick={cancelRequest}
-            className="rounded-full bg-zinc-700 px-3 py-1 text-xs hover:bg-zinc-600"
-          >
-            Cancel
-          </button>
-        </div>
+        <Toast
+          action={
+            <button
+              onClick={cancelRequest}
+              className="rounded-full bg-zinc-700/80 px-3 py-1 text-xs transition hover:bg-zinc-600"
+            >
+              Cancel
+            </button>
+          }
+        >
+          <span className="flex items-center gap-2">
+            <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-zinc-400/30 border-t-emerald-400" />
+            Requesting connection…
+          </span>
+        </Toast>
       )}
 
       {conn.kind === "incoming" && (
@@ -367,9 +371,12 @@ export default function Home() {
       )}
 
       {video === "requesting" && (
-        <div className="absolute bottom-24 left-1/2 z-30 -translate-x-1/2 rounded-full bg-zinc-800/90 px-4 py-2 text-sm text-zinc-100 shadow-lg backdrop-blur">
-          Waiting for stranger to accept video…
-        </div>
+        <Toast variant="info">
+          <span className="flex items-center gap-2">
+            <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-zinc-400/30 border-t-emerald-400" />
+            Waiting for stranger to accept video…
+          </span>
+        </Toast>
       )}
 
       {video === "incoming" && (

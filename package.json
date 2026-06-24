@@ -7,7 +7,7 @@
     "start": "next start -p 3000",
     "build": "npx prisma generate && next build",
     "dev:both": "concurrently -n dev,prod -c blue,green \"next dev -p 4000\" \"next start -p 3000\"",
-    "setup:both": "npm run build && concurrently -n dev,prod -c blue,green \"next dev -p 4000\" \"next start -p 3000\"",
+    "setup:both": "npm run build && npm run dev:both",
     "lint": "eslint"
   },
   "dependencies": {

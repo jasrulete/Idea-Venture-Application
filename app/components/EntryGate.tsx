@@ -34,30 +34,53 @@ export default function EntryGate({
   }
 
   return (
-    <div className="flex min-h-full flex-1 flex-col items-center justify-center gap-8 bg-zinc-950 p-6 text-zinc-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold tracking-tight">Pulse</h1>
-        <p className="mt-2 max-w-sm text-zinc-400">
-          A living globe of anonymous strangers. Drop onto the map and connect.
-        </p>
+    <div className="relative flex min-h-full flex-1 flex-col items-center justify-center overflow-hidden bg-[var(--background)] p-6 text-zinc-100 grain-overlay">
+      {/* Ambient background glow */}
+      <div className="pointer-events-none absolute inset-0" aria-hidden>
+        <div className="absolute left-1/2 top-1/3 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-500/10 blur-3xl" />
+        <div className="absolute bottom-0 left-1/4 h-64 w-64 rounded-full bg-teal-500/5 blur-3xl" />
       </div>
 
-      <button
-        onClick={enter}
-        disabled={status === "locating"}
-        className="rounded-full bg-emerald-400 px-8 py-3 font-semibold text-zinc-950 transition hover:bg-emerald-300 disabled:opacity-60"
-      >
-        {status === "locating" ? "Locating…" : "Enter Pulse"}
-      </button>
+      <div className="animate-fade-up relative z-10 flex flex-col items-center gap-8 text-center">
+        <div>
+          <p className="mb-2 text-xs font-medium uppercase tracking-[0.25em] text-emerald-400/80">
+            Anonymous · Ephemeral · Global
+          </p>
+          <h1 className="bg-gradient-to-b from-white to-zinc-400 bg-clip-text text-5xl font-bold tracking-tight text-transparent sm:text-6xl">
+            Pulse
+          </h1>
+          <p className="mx-auto mt-4 max-w-sm text-base leading-relaxed text-zinc-400">
+            A living globe of strangers. Drop onto the map, tap a dot, start
+            talking.
+          </p>
+        </div>
 
-      {status === "error" && (
-        <p className="max-w-sm text-center text-sm text-red-400">{error}</p>
-      )}
+        <button
+          onClick={enter}
+          disabled={status === "locating"}
+          className="group relative overflow-hidden rounded-full bg-emerald-400 px-10 py-3.5 font-semibold text-zinc-950 shadow-lg shadow-emerald-500/20 transition hover:bg-emerald-300 hover:shadow-emerald-500/30 disabled:opacity-60"
+        >
+          {status === "locating" ? (
+            <span className="flex items-center gap-2">
+              <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-zinc-950/30 border-t-zinc-950" />
+              Locating…
+            </span>
+          ) : (
+            "Enter Pulse"
+          )}
+        </button>
 
-      <p className="max-w-sm text-center text-xs text-zinc-500">
-        No sign-up. Your dot is placed 1–3&nbsp;km from your real location.
-        Nothing is stored — closing the tab ends everything.
-      </p>
+        {status === "error" && (
+          <p className="max-w-sm text-sm text-red-400 animate-fade-up">
+            {error}
+          </p>
+        )}
+
+        <p className="max-w-xs text-xs leading-relaxed text-zinc-600">
+          No sign-up. Your dot is placed 1–3&nbsp;km from your real location.
+          Close the tab — everything disappears.
+        </p>
+      </div>
     </div>
   );
 }
