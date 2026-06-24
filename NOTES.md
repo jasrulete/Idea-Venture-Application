@@ -70,4 +70,5 @@
 
 ### Local dev note
 - **`npm run dev` failed** in `Idea-Venture-Application` because `node_modules` was missing — run `npm install` after clone/branch switch.
-- **`dev:both`** now runs two dev servers (`:4000` + `:3000`) so two-browser WebRTC testing works without a production build first.
+- **Two-user testing:** use one server (`npm run dev`) + normal + incognito on `http://localhost:4000` (README approach). Next.js 16 blocks two `next dev` processes in the same folder.
+- **`dev:both` / `setup:both`:** `setup:both` builds first, then runs dev on `:4000` and production on `:3000` for side-by-side port testing.
