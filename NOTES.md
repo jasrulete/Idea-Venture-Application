@@ -15,16 +15,23 @@
 - **Fix:** Restrict heartbeat to `where: { id }` (the polling user only).
 - **Verified:** Closed tabs → dots disappear within ~15s.
 
-### Fix 2 — Chat messages only one sided
+### Fix 2: Chat messages only one sided
 - **Symptom:** Messages appeared on sender's side only; peer never received them.
 - **How I found it:** Connected two browsers, sent messages after "Connected" state — one-way only. Traced WebRTC data channel in `lib/webrtc.ts`.
 - **Cause:** `sendChat` sent `{ t: "msg" }` but `wireDataChannel` only handled `{ t: "chat" }`.
 - **Fix:** Changed sender to use `"chat"`.
 - **Verified:** Messages work both directions over P2P data channel.
 
-### Fix 3 — Peers stuck busy after disconnect
+### Fix 3: Peers stuck busy after disconnect
 - **Symptom:** After ending a connection, could not reconnect — dot stayed busy / requests auto-declined.
 - **How I found it:** Connected, ended call, tried connecting again — failed. Checked `busy` handling in `/api/signal`.
 - **Cause:** `busy` cleared on `decline` but not on `end`.
 - **Fix:** Clear `busy` for both peers on `end` as well as `decline`.
 - **Verified:** Can connect, disconnect, and reconnect successfully.
+
+### Fix 4: WebRTC ICE candidates dropped
+- **Symptom:** Video unreliable; remote stream often missing on desktop browsers.
+- **How I found it:** Chat worked (Step 2) but video failed on laptop — traced signaling flow in `handleSignal`.
+- **Cause:** `flushPendingCandidates()` ran before `setRemoteDescription`, so ICE candidates were added too early and silently failed.
+- **Fix:** Set remote description first, then flush pending ICE candidates.
+- **Verified:** Video call establishes with remote stream on desktop.
