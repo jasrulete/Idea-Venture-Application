@@ -112,11 +112,31 @@ Reviewed `/api/join`, `/api/poll`, `/api/signal`, `/api/leave`. Main risk: all e
 - Global stale cleanup on poll kept for simplicity (noted perf risk at scale).
 - Did not add full moderation/reporting (Phase 4 candidate).
 
-### Verification
+## Phase 4 — Make it better
 
-- `npm run build` passes after fixes.
-- Unauthorized poll/leave/signal return 401 without a valid secret.
-- Full two-user connect / chat / video flow retested after client secret wiring.
+### Pre-phase audit (regression fix)
+
+- **Busy stuck after end (regression):** Phase 3 re-applied `busy: false` on both `decline` and `end`. While connected, auto-decline signals to third parties cleared the _active_ user's busy flag (`signal/route.ts` + client sending decline when not idle). **Fix:** only `end` clears busy; client ignores incoming requests when not idle (server already auto-declines when target is busy).
+- Phase 1 fixes re-verified: poll heartbeat scoped to caller, chat `"chat"` type, ICE after SDP, join returns offset coords for map consistency.
+
+### Features shipped
+
+1. **Mobile responsiveness** — `100dvh` layouts, bottom-sheet chat, safe-area padding, `interactive-widget: overlays-content` viewport, fixed root overflow.
+2. **Map recenter** — fly-to on join; recenter button when user pin leaves viewport after panning.
+3. **Nearby list view** — Map/List toggle; client-side haversine sort on privacy-offset coords (~distance labels).
+4. **Video controls** — mute, camera off, mirrored PiP (local only), chat stays open below video strip (not full-screen takeover).
+5. **Busy dot styling** — amber-bordered gray dots; clicks disabled on busy peers.
+6. **Camera flip** — `replaceTrack` with toggled `facingMode` on active call.
+7. **Optional nickname** — entry field; shared P2P via data-channel `intro` message only (never hits server/DB).
+8. **Keyboard fixes** — no layout resize on keyboard; refocus input after send; `overscroll-contain` on chat.
+9. **Chat scroll bleed** — `isolate`, `min-h-0`, contained overflow, z-index stack map < video < chat.
+10. **Structure cleanup** — `usePulseSession` hook, `LiveView`, `MapHud`, `PeerListPanel`, `RecenterButton`, `StatusToasts`.
+
+### Trade-offs / next steps
+
+- List distance is approximate (1–3 km privacy offset per user).
+- Camera flip requires an active video stream; unsupported on some desktop browsers.
+- With more time: TURN fallback, shared rate-limit store, reporting flow.
 
 ### Local dev note
 

@@ -5,16 +5,22 @@ export async function join(
   id: string,
   lat: number,
   lng: number,
-): Promise<string> {
+): Promise<{ secret: string; lat: number; lng: number }> {
   const res = await fetch("/api/join", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id, lat, lng }),
   });
   if (!res.ok) throw new Error(`join failed: ${res.status}`);
-  const data = (await res.json()) as { secret?: string };
-  if (!data.secret) throw new Error("join missing secret");
-  return data.secret;
+  const data = (await res.json()) as {
+    secret?: string;
+    lat?: number;
+    lng?: number;
+  };
+  if (!data.secret || typeof data.lat !== "number" || typeof data.lng !== "number") {
+    throw new Error("join missing session data");
+  }
+  return { secret: data.secret, lat: data.lat, lng: data.lng };
 }
 
 export async function poll(id: string, secret: string): Promise<PollResponse> {

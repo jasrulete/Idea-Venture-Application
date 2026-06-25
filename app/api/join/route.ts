@@ -52,5 +52,10 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "id already in use" }, { status: 409 });
   }
 
-  return Response.json({ ok: true, secret });
+  return Response.json({
+    ok: true,
+    secret,
+    lat: offset.lat,
+    lng: offset.lng,
+  });
 }
