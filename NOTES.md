@@ -112,33 +112,12 @@ Reviewed `/api/join`, `/api/poll`, `/api/signal`, `/api/leave`. Main risk: all e
 - Global stale cleanup on poll kept for simplicity (noted perf risk at scale).
 - Did not add full moderation/reporting (Phase 4 candidate).
 
-### Verification
-
-- `npm run build` passes after fixes.
-- Unauthorized poll/leave/signal return 401 without a valid secret.
-- Full two-user connect / chat / video flow retested after client secret wiring.
-
-### Local dev note
-
-- **`npm run dev` failed** in `Idea-Venture-Application` because `node_modules` was missing — run `npm install` after clone/branch switch.
-- **Two-user testing:** use one server (`npm run dev`) + normal + incognito on `http://localhost:4000` (README approach). Next.js 16 blocks two `next dev` processes in the same folder.
-- **`dev:both` / `setup:both`:** `setup:both` builds first, then runs dev on `:4000` and production on `:3000` for side-by-side port testing.
-
 ## Phase 4 — Make it better
 
 ### Pre-phase audit (regression fix)
 
-- **Busy stuck after end (regression):** Phase 3 re-applied `busy: false` on both `decline` and `end`. While connected, auto-decline signals to third parties cleared the *active* user's busy flag (`signal/route.ts` + client sending decline when not idle). **Fix:** only `end` clears busy; client ignores incoming requests when not idle (server already auto-declines when target is busy).
+- **Busy stuck after end (regression):** Phase 3 re-applied `busy: false` on both `decline` and `end`. While connected, auto-decline signals to third parties cleared the _active_ user's busy flag (`signal/route.ts` + client sending decline when not idle). **Fix:** only `end` clears busy; client ignores incoming requests when not idle (server already auto-declines when target is busy).
 - Phase 1 fixes re-verified: poll heartbeat scoped to caller, chat `"chat"` type, ICE after SDP, join returns offset coords for map consistency.
-
-### Data model (Postgres vs ephemeral)
-
-| Stored in Postgres (transient) | Ephemeral / never stored |
-|---|---|
-| `Presence`: session id, auth secret, privacy-offset lat/lng, busy flag, lastSeen | Raw GPS coordinates |
-| `Signal`: WebRTC/signaling mailbox (request/accept/SDP/ICE/end) | Chat text, nicknames, video/audio |
-| Deleted on leave, staleness (~15s), or after signal delivery | Rate-limit buckets (in-memory per serverless instance) |
-| | All React/UI state, WebRTC media streams |
 
 ### Features shipped
 
@@ -158,3 +137,9 @@ Reviewed `/api/join`, `/api/poll`, `/api/signal`, `/api/leave`. Main risk: all e
 - List distance is approximate (1–3 km privacy offset per user).
 - Camera flip requires an active video stream; unsupported on some desktop browsers.
 - With more time: TURN fallback, shared rate-limit store, reporting flow.
+
+### Local dev note
+
+- **`npm run dev` failed** in `Idea-Venture-Application` because `node_modules` was missing — run `npm install` after clone/branch switch.
+- **Two-user testing:** use one server (`npm run dev`) + normal + incognito on `http://localhost:4000` (README approach). Next.js 16 blocks two `next dev` processes in the same folder.
+- **`dev:both` / `setup:both`:** `setup:both` builds first, then runs dev on `:4000` and production on `:3000` for side-by-side port testing.
