@@ -20,7 +20,6 @@ const REQUEST_TIMEOUT_MS = 30_000;
 
 export function usePulseSession(
   sessionId: string,
-  nickname: string,
   coords: { lat: number; lng: number },
 ) {
   const [peers, setPeers] = useState<PeerDot[]>([]);
@@ -33,9 +32,7 @@ export function usePulseSession(
     lng: number;
   } | null>(null);
   const [sessionSecret, setSessionSecret] = useState<string | null>(null);
-  const [peerNickname, setPeerNickname] = useState<string | null>(null);
   const sessionSecretRef = useRef<string | null>(null);
-  const nicknameRef = useRef(nickname);
 
   const [conn, _setConn] = useState<Conn>({ kind: "idle" });
   const connRef = useRef<Conn>(conn);
@@ -54,10 +51,6 @@ export function usePulseSession(
   const peerRef = useRef<PeerSession | null>(null);
   const msgId = useRef(0);
   const requestTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    nicknameRef.current = nickname;
-  }, [nickname]);
 
   const signal = useCallback(
     async (toId: string, type: SignalType, payload?: string) => {
@@ -91,7 +84,6 @@ export function usePulseSession(
       setRemoteStream(null);
       setVideo("none");
       setMessages([]);
-      setPeerNickname(null);
       setConn({ kind: "idle" });
       if (message) showNotice(message);
     },
@@ -144,7 +136,6 @@ export function usePulseSession(
         },
         onChat: (text) => addMessage(false, text),
         onControl: (ctrl) => handleControl(ctrl),
-        onIntro: (nick) => setPeerNickname(nick),
         onRemoteStream: (stream) => setRemoteStream(stream),
         onConnectionState: (state) => {
           if (state === "failed") {
@@ -153,7 +144,6 @@ export function usePulseSession(
         },
         onChannelOpen: () => {
           setConn({ kind: "connected", peerId });
-          ps.sendIntro(nicknameRef.current);
         },
       });
       peerRef.current = ps;
@@ -260,13 +250,6 @@ export function usePulseSession(
     const next = !ps.isVideoEnabled();
     ps.setVideoEnabled(next);
     return next;
-  }, []);
-
-  const switchCamera = useCallback(async () => {
-    const ps = peerRef.current;
-    if (!ps) return;
-    const stream = await ps.switchCamera();
-    if (stream) setLocalStream(stream);
   }, []);
 
   const processSignal = useCallback(
@@ -403,7 +386,6 @@ export function usePulseSession(
     myLocation,
     conn,
     video,
-    peerNickname,
     peerRef,
     requestConnection,
     cancelRequest,
@@ -416,7 +398,6 @@ export function usePulseSession(
     endVideo,
     toggleAudio,
     toggleVideo,
-    switchCamera,
     addMessage,
   };
 }
