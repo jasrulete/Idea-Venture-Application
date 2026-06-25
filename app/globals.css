@@ -52,8 +52,21 @@ body {
 
 .pulse-dot--busy {
   animation: none;
-  opacity: 0.35;
+  opacity: 0.55;
   cursor: not-allowed;
+  background: #52525b !important;
+  border-color: rgba(251, 191, 36, 0.75) !important;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.35) !important;
+}
+
+.pulse-dot--busy-static {
+  background: #52525b !important;
+  border-color: rgba(251, 191, 36, 0.75) !important;
+}
+
+/* Mirrored self-view only (remote feed stays natural) */
+.video-mirror {
+  transform: scaleX(-1);
 }
 
 /* The user's own "you are here" pin — small, sized like the dots. */

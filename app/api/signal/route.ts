@@ -120,7 +120,9 @@ export async function POST(request: NextRequest) {
       where: { id: { in: [fromId, toId] } },
       data: { busy: true },
     });
-  } else if (signalType === "decline" || signalType === "end") {
+  } else if (signalType === "end") {
+    // Only `end` clears busy — `decline` rejects a not-yet-connected request
+    // and must not clear busy for an active connection (regression fix).
     await prisma.presence.updateMany({
       where: { id: { in: [fromId, toId] } },
       data: { busy: false },

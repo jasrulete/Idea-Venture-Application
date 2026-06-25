@@ -18,7 +18,7 @@ export default function ConnectionPrompt({
   onDecline: () => void;
 }) {
   return (
-    <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/70 p-6 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm sm:p-6">
       <div
         className="glass-panel animate-scale-in w-full max-w-sm rounded-3xl p-8 text-center text-zinc-100 shadow-2xl"
         role="dialog"

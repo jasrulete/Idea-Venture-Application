@@ -5,10 +5,13 @@ export type PeerControl =
   | "video-decline"
   | "video-end";
 
+export type FacingMode = "user" | "environment";
+
 interface PeerCallbacks {
   onSignal: (type: DescType, payload: string) => void;
   onChat: (text: string) => void;
   onControl: (ctrl: PeerControl) => void;
+  onIntro: (nick: string) => void;
   onRemoteStream: (stream: MediaStream | null) => void;
   onConnectionState: (state: RTCPeerConnectionState) => void;
   onChannelOpen: () => void;
@@ -28,6 +31,8 @@ export class PeerSession {
   private closed = false;
   private readonly cb: PeerCallbacks;
   private pendingCandidates: RTCIceCandidateInit[] = [];
+  private facingMode: FacingMode = "user";
+  private pendingIntro: string | null = null;
 
   constructor(initiator: boolean, cb: PeerCallbacks) {
     this.cb = cb;
@@ -72,7 +77,13 @@ export class PeerSession {
   }
 
   private wireDataChannel(dc: RTCDataChannel) {
-    dc.onopen = () => this.cb.onChannelOpen();
+    dc.onopen = () => {
+      if (this.pendingIntro) {
+        this.safeSend({ t: "intro", nick: this.pendingIntro });
+        this.pendingIntro = null;
+      }
+      this.cb.onChannelOpen();
+    };
     dc.onmessage = (e) => {
       try {
         const msg = JSON.parse(e.data as string);
@@ -80,6 +91,8 @@ export class PeerSession {
           this.cb.onChat(msg.text);
         } else if (msg.t === "ctrl" && typeof msg.ctrl === "string") {
           this.cb.onControl(msg.ctrl as PeerControl);
+        } else if (msg.t === "intro" && typeof msg.nick === "string") {
+          this.cb.onIntro(msg.nick);
         }
       } catch {}
     };
@@ -132,6 +145,16 @@ export class PeerSession {
     this.safeSend({ t: "chat", text });
   }
 
+  sendIntro(nick: string) {
+    const trimmed = nick.trim();
+    if (!trimmed) return;
+    if (this.dc?.readyState === "open") {
+      this.safeSend({ t: "intro", nick: trimmed });
+    } else {
+      this.pendingIntro = trimmed;
+    }
+  }
+
   sendControl(ctrl: PeerControl) {
     this.safeSend({ t: "ctrl", ctrl });
   }
@@ -144,14 +167,82 @@ export class PeerSession {
 
   async startVideo(): Promise<MediaStream> {
     if (!this.localStream) {
-      this.localStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      });
+      this.localStream = await this.getUserMedia();
       for (const track of this.localStream.getTracks()) {
         this.pc.addTrack(track, this.localStream);
       }
     }
+    return this.localStream;
+  }
+
+  private async getUserMedia(): Promise<MediaStream> {
+    return navigator.mediaDevices.getUserMedia({
+      video: { facingMode: this.facingMode },
+      audio: true,
+    });
+  }
+
+  setAudioEnabled(enabled: boolean) {
+    this.localStream
+      ?.getAudioTracks()
+      .forEach((track) => (track.enabled = enabled));
+  }
+
+  setVideoEnabled(enabled: boolean) {
+    this.localStream
+      ?.getVideoTracks()
+      .forEach((track) => (track.enabled = enabled));
+  }
+
+  isAudioEnabled(): boolean {
+    const track = this.localStream?.getAudioTracks()[0];
+    return track ? track.enabled : false;
+  }
+
+  isVideoEnabled(): boolean {
+    const track = this.localStream?.getVideoTracks()[0];
+    return track ? track.enabled : false;
+  }
+
+  async switchCamera(): Promise<MediaStream | null> {
+    if (!this.localStream) return null;
+    this.facingMode = this.facingMode === "user" ? "environment" : "user";
+
+    const newStream = await this.getUserMedia();
+    const newVideo = newStream.getVideoTracks()[0];
+    const newAudio = newStream.getAudioTracks()[0];
+    if (!newVideo) return this.localStream;
+
+    const oldVideo = this.localStream.getVideoTracks()[0];
+    const oldAudio = this.localStream.getAudioTracks()[0];
+    const sender = this.pc.getSenders().find((s) => s.track?.kind === "video");
+
+    if (sender) {
+      await sender.replaceTrack(newVideo);
+    } else {
+      this.pc.addTrack(newVideo, this.localStream);
+    }
+
+    if (oldVideo) {
+      oldVideo.stop();
+      this.localStream.removeTrack(oldVideo);
+    }
+    this.localStream.addTrack(newVideo);
+
+    if (newAudio && oldAudio) {
+      const audioSender = this.pc
+        .getSenders()
+        .find((s) => s.track?.kind === "audio");
+      if (audioSender) await audioSender.replaceTrack(newAudio);
+      oldAudio.stop();
+      this.localStream.removeTrack(oldAudio);
+      this.localStream.addTrack(newAudio);
+    } else {
+      newStream.getTracks().forEach((t) => {
+        if (t !== newVideo) t.stop();
+      });
+    }
+
     return this.localStream;
   }
 

@@ -2,13 +2,16 @@
 
 import { useState } from "react";
 
+const MAX_NICK = 20;
+
 export default function EntryGate({
   onReady,
 }: {
-  onReady: (lat: number, lng: number) => void;
+  onReady: (lat: number, lng: number, nickname: string) => void;
 }) {
   const [status, setStatus] = useState<"idle" | "locating" | "error">("idle");
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState("");
+  const [nickname, setNickname] = useState("");
 
   function enter() {
     if (!("geolocation" in navigator)) {
@@ -18,7 +21,12 @@ export default function EntryGate({
     }
     setStatus("locating");
     navigator.geolocation.getCurrentPosition(
-      (pos) => onReady(pos.coords.latitude, pos.coords.longitude),
+      (pos) =>
+        onReady(
+          pos.coords.latitude,
+          pos.coords.longitude,
+          nickname.trim().slice(0, MAX_NICK),
+        ),
       (err) => {
         setStatus("error");
         setError(
@@ -27,21 +35,18 @@ export default function EntryGate({
             : "Couldn't get your location. Please try again.",
         );
       },
-      // High accuracy + maximumAge:0 forces a fresh fix (Wi-Fi/GPS scan)
-      // instead of reusing the browser's cached IP-based location.
       { enableHighAccuracy: true, timeout: 15_000, maximumAge: 0 },
     );
   }
 
   return (
-    <div className="relative flex min-h-full flex-1 flex-col items-center justify-center overflow-hidden bg-[var(--background)] p-6 text-zinc-100 grain-overlay">
-      {/* Ambient background glow */}
+    <div className="relative flex min-h-[100dvh] flex-1 flex-col items-center justify-center overflow-hidden bg-[var(--background)] p-6 text-zinc-100 grain-overlay">
       <div className="pointer-events-none absolute inset-0" aria-hidden>
         <div className="absolute left-1/2 top-1/3 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-500/10 blur-3xl" />
         <div className="absolute bottom-0 left-1/4 h-64 w-64 rounded-full bg-teal-500/5 blur-3xl" />
       </div>
 
-      <div className="animate-fade-up relative z-10 flex flex-col items-center gap-8 text-center">
+      <div className="animate-fade-up relative z-10 flex w-full max-w-sm flex-col items-center gap-6 text-center">
         <div>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.25em] text-emerald-400/80">
             Anonymous · Ephemeral · Global
@@ -55,13 +60,27 @@ export default function EntryGate({
           </p>
         </div>
 
+        <label className="w-full text-left">
+          <span className="mb-1.5 block text-xs font-medium text-zinc-500">
+            Nickname{" "}
+            <span className="font-normal text-zinc-600">(optional, P2P only)</span>
+          </span>
+          <input
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value.slice(0, MAX_NICK))}
+            placeholder="Stranger"
+            maxLength={MAX_NICK}
+            className="w-full rounded-xl border border-white/10 bg-zinc-900/80 px-4 py-3 text-sm outline-none placeholder:text-zinc-600 focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
+          />
+        </label>
+
         <button
           onClick={enter}
           disabled={status === "locating"}
-          className="group relative overflow-hidden rounded-full bg-emerald-400 px-10 py-3.5 font-semibold text-zinc-950 shadow-lg shadow-emerald-500/20 transition hover:bg-emerald-300 hover:shadow-emerald-500/30 disabled:opacity-60"
+          className="group relative w-full overflow-hidden rounded-full bg-emerald-400 px-10 py-3.5 font-semibold text-zinc-950 shadow-lg shadow-emerald-500/20 transition hover:bg-emerald-300 hover:shadow-emerald-500/30 disabled:opacity-60 sm:w-auto"
         >
           {status === "locating" ? (
-            <span className="flex items-center gap-2">
+            <span className="flex items-center justify-center gap-2">
               <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-zinc-950/30 border-t-zinc-950" />
               Locating…
             </span>
@@ -71,9 +90,7 @@ export default function EntryGate({
         </button>
 
         {status === "error" && (
-          <p className="max-w-sm text-sm text-red-400 animate-fade-up">
-            {error}
-          </p>
+          <p className="max-w-sm text-sm text-red-400 animate-fade-up">{error}</p>
         )}
 
         <p className="max-w-xs text-xs leading-relaxed text-zinc-600">
