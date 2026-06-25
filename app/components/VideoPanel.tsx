@@ -8,14 +8,12 @@ export default function VideoPanel({
   onEnd,
   onToggleAudio,
   onToggleVideo,
-  onSwitchCamera,
 }: {
   localStream: MediaStream | null;
   remoteStream: MediaStream | null;
   onEnd: () => void;
   onToggleAudio: () => boolean;
   onToggleVideo: () => boolean;
-  onSwitchCamera: () => void;
 }) {
   const localRef = useRef<HTMLVideoElement>(null);
   const remoteRef = useRef<HTMLVideoElement>(null);
@@ -37,7 +35,7 @@ export default function VideoPanel({
   }, [remoteStream]);
 
   return (
-    <div className="relative z-[25] flex h-[38dvh] min-h-[180px] shrink-0 flex-col border-b border-white/10 bg-black sm:absolute sm:left-0 sm:top-0 sm:h-auto sm:max-h-[45vh] sm:w-[calc(100%-min(28rem,100%))] sm:border-b-0 sm:border-r">
+    <div className="relative flex h-[38dvh] min-h-[180px] shrink-0 flex-col border-b border-white/10 bg-black sm:h-full sm:min-h-0 sm:w-[calc(100%-min(28rem,100%))] sm:border-b-0 sm:border-r">
       <div className="relative min-h-0 flex-1">
         <video
           ref={remoteRef}
@@ -82,9 +80,6 @@ export default function VideoPanel({
           onClick={() => setCamOff(!onToggleVideo())}
         >
           {camOff ? "📷" : "🎥"}
-        </ControlButton>
-        <ControlButton label="Flip camera" onClick={onSwitchCamera}>
-          🔄
         </ControlButton>
         <ControlButton label="End video" danger onClick={onEnd}>
           ✕

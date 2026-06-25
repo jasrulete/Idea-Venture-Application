@@ -2,16 +2,13 @@
 
 import { useState } from "react";
 
-const MAX_NICK = 20;
-
 export default function EntryGate({
   onReady,
 }: {
-  onReady: (lat: number, lng: number, nickname: string) => void;
+  onReady: (lat: number, lng: number) => void;
 }) {
   const [status, setStatus] = useState<"idle" | "locating" | "error">("idle");
   const [error, setError] = useState("");
-  const [nickname, setNickname] = useState("");
 
   function enter() {
     if (!("geolocation" in navigator)) {
@@ -21,12 +18,7 @@ export default function EntryGate({
     }
     setStatus("locating");
     navigator.geolocation.getCurrentPosition(
-      (pos) =>
-        onReady(
-          pos.coords.latitude,
-          pos.coords.longitude,
-          nickname.trim().slice(0, MAX_NICK),
-        ),
+      (pos) => onReady(pos.coords.latitude, pos.coords.longitude),
       (err) => {
         setStatus("error");
         setError(
@@ -59,20 +51,6 @@ export default function EntryGate({
             talking.
           </p>
         </div>
-
-        <label className="w-full text-left">
-          <span className="mb-1.5 block text-xs font-medium text-zinc-500">
-            Nickname{" "}
-            <span className="font-normal text-zinc-600">(optional, P2P only)</span>
-          </span>
-          <input
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value.slice(0, MAX_NICK))}
-            placeholder="Stranger"
-            maxLength={MAX_NICK}
-            className="w-full rounded-xl border border-white/10 bg-zinc-900/80 px-4 py-3 text-sm outline-none placeholder:text-zinc-600 focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
-          />
-        </label>
 
         <button
           onClick={enter}

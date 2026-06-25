@@ -11,15 +11,13 @@ import { usePulseSession } from "@/app/hooks/usePulseSession";
 
 export default function LiveView({
   sessionId,
-  nickname,
   coords,
 }: {
   sessionId: string;
-  nickname: string;
   coords: { lat: number; lng: number };
 }) {
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
-  const session = usePulseSession(sessionId, nickname, coords);
+  const session = usePulseSession(sessionId, coords);
   const {
     peers,
     messages,
@@ -29,7 +27,6 @@ export default function LiveView({
     myLocation,
     conn,
     video,
-    peerNickname,
     peerRef,
     requestConnection,
     cancelRequest,
@@ -42,18 +39,22 @@ export default function LiveView({
     endVideo,
     toggleAudio,
     toggleVideo,
-    switchCamera,
     addMessage,
   } = session;
 
   const inChat = conn.kind === "connecting" || conn.kind === "connected";
   const videoActive = video === "active";
-  const peerLabel = peerNickname?.trim() || "Stranger";
 
   return (
     <main className="fixed inset-0 flex flex-col overflow-hidden bg-zinc-950">
       <div
-        className={`relative min-h-0 flex-1 ${inChat ? "flex flex-col" : ""}`}
+        className={`relative min-h-0 flex-1 ${
+          inChat
+            ? videoActive
+              ? "flex flex-col sm:flex-row"
+              : "flex flex-col"
+            : ""
+        }`}
       >
         <WorldMap
           peers={peers}
@@ -72,7 +73,6 @@ export default function LiveView({
             onEnd={endVideo}
             onToggleAudio={toggleAudio}
             onToggleVideo={toggleVideo}
-            onSwitchCamera={switchCamera}
           />
         )}
 
@@ -81,7 +81,6 @@ export default function LiveView({
             messages={messages}
             connected={conn.kind === "connected"}
             videoBusy={video !== "none"}
-            peerLabel={peerLabel}
             compact={videoActive}
             onSend={(text) => {
               peerRef.current?.sendChat(text);

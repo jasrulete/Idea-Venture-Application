@@ -7,7 +7,6 @@ import LiveView from "./components/LiveView";
 export default function Home() {
   const [phase, setPhase] = useState<"gate" | "live">("gate");
   const [sessionId] = useState(() => crypto.randomUUID());
-  const [nickname, setNickname] = useState("");
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
     null,
   );
@@ -15,8 +14,7 @@ export default function Home() {
   if (phase === "gate") {
     return (
       <EntryGate
-        onReady={(lat, lng, nick) => {
-          setNickname(nick);
+        onReady={(lat, lng) => {
           setCoords({ lat, lng });
           setPhase("live");
         }}
@@ -26,7 +24,5 @@ export default function Home() {
 
   if (!coords) return null;
 
-  return (
-    <LiveView sessionId={sessionId} nickname={nickname} coords={coords} />
-  );
+  return <LiveView sessionId={sessionId} coords={coords} />;
 }
