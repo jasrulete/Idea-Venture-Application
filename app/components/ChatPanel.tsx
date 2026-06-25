@@ -8,6 +8,44 @@ export interface ChatMessage {
   text: string;
 }
 
+function useMobileComposerLayout(formRef: React.RefObject<HTMLFormElement | null>) {
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
+  const [composerHeight, setComposerHeight] = useState(72);
+
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const syncKeyboardOffset = () => {
+      setKeyboardOffset(
+        Math.max(0, window.innerHeight - vv.height - vv.offsetTop),
+      );
+    };
+
+    syncKeyboardOffset();
+    vv.addEventListener("resize", syncKeyboardOffset);
+    vv.addEventListener("scroll", syncKeyboardOffset);
+    return () => {
+      vv.removeEventListener("resize", syncKeyboardOffset);
+      vv.removeEventListener("scroll", syncKeyboardOffset);
+    };
+  }, []);
+
+  useEffect(() => {
+    const el = formRef.current;
+    if (!el) return;
+
+    const measure = () => setComposerHeight(el.offsetHeight);
+    measure();
+
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [formRef]);
+
+  return { keyboardOffset, composerHeight };
+}
+
 export default function ChatPanel({
   messages,
   connected,
@@ -26,11 +64,11 @@ export default function ChatPanel({
   compact?: boolean;
 }) {
   const [draft, setDraft] = useState("");
-  const [keyboardInset, setKeyboardInset] = useState(0);
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const prevCount = useRef(messages.length);
+  const { keyboardOffset, composerHeight } = useMobileComposerLayout(formRef);
 
   useEffect(() => {
     if (messages.length > prevCount.current) {
@@ -38,27 +76,6 @@ export default function ChatPanel({
     }
     prevCount.current = messages.length;
   }, [messages]);
-
-  useEffect(() => {
-    const vv = window.visualViewport;
-    if (!vv) return;
-
-    const syncKeyboardInset = () => {
-      const inset = Math.max(
-        0,
-        window.innerHeight - vv.height - vv.offsetTop,
-      );
-      setKeyboardInset(inset);
-    };
-
-    syncKeyboardInset();
-    vv.addEventListener("resize", syncKeyboardInset);
-    vv.addEventListener("scroll", syncKeyboardInset);
-    return () => {
-      vv.removeEventListener("resize", syncKeyboardInset);
-      vv.removeEventListener("scroll", syncKeyboardInset);
-    };
-  }, []);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -71,9 +88,14 @@ export default function ChatPanel({
 
   function handleInputFocus() {
     window.setTimeout(() => {
-      formRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
-    }, 300);
+      inputRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }, 350);
   }
+
+  const safeBottom =
+    keyboardOffset > 0
+      ? "0.75rem"
+      : "max(0.75rem, env(safe-area-inset-bottom, 0px))";
 
   return (
     <div
@@ -121,7 +143,14 @@ export default function ChatPanel({
         </div>
       </header>
 
-      <div className="chat-scroll min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain p-3 sm:p-4">
+      <div
+        className="chat-scroll min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain p-3 max-sm:pb-[var(--composer-offset)] sm:p-4"
+        style={
+          {
+            "--composer-offset": `${composerHeight + 8}px`,
+          } as React.CSSProperties
+        }
+      >
         {messages.length === 0 && (
           <div className="mt-8 flex flex-col items-center gap-2 text-center sm:mt-12">
             <span className="text-2xl opacity-40">💬</span>
@@ -154,9 +183,10 @@ export default function ChatPanel({
         ref={formRef}
         onSubmit={submit}
         style={{
-          paddingBottom: `max(${keyboardInset}px, env(safe-area-inset-bottom, 0px), 0.75rem)`,
+          bottom: keyboardOffset,
+          paddingBottom: safeBottom,
         }}
-        className="sticky bottom-0 z-10 flex shrink-0 gap-2 border-t border-zinc-800 bg-[var(--surface-glass)] p-3 backdrop-blur-md"
+        className="fixed inset-x-0 z-30 flex shrink-0 gap-2 border-t border-zinc-800 bg-[var(--surface-glass)] p-3 backdrop-blur-md sm:static sm:inset-auto sm:z-10"
       >
         <input
           ref={inputRef}
